@@ -75,11 +75,21 @@ class DogBot(object):
         # Tag the parts of speech in event['text'] according to the Penn Treebank tagset
         pos_tags = nltk.pos_tag(nltk.word_tokenize(event['text']))
         logging.debug("Tokenization of message: %s", pos_tags)
-        parts_of_speech_to_keep = [
-            'NN', 'NNS', 'NNP', 'NNPS', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ', 'JJ', 'JJR', 'JJS']
+        nouns = []
+        noun_tags = ['NN', 'NNS', 'NNP', 'NNPS']
+        verbs = []
+        verb_tags = ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
+        adjectives = []
+        adjective_tags = ['JJ', 'JJR', 'JJS']
+        # send search terms in order [adjectives, nouns, verbs]
         for pos in pos_tags:
-            if pos[1] in parts_of_speech_to_keep:
-                search_terms.append(pos[0])
+            if pos[1] in noun_tags:
+                nouns.append(pos[0])
+            if pos[1] in verb_tags:
+                verbs.append(pos[0])
+            if pos[1] in adjective_tags:
+                adjectives.append(pos[0])
+        search_terms = search_terms + adjectives + nouns + verbs
         channel = event['channel']
         logging.debug("search_terms: %s", search_terms)
         gif_link = find_gif(self.giphy_api_key, search_terms)
@@ -120,7 +130,7 @@ def find_gif(giphy_api_key, search_terms):
     if 'data' not in response.keys():
         logging.error("We didn't get back anything from giphy!")
         return None
-    return response['data'][0]['images']['downsized_medium']['url']
+    return response['data'][0]['images']['downsized']['url']
 
 
 def main():
